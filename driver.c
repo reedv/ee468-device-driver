@@ -1,5 +1,6 @@
 #include <linux/init.h>
-#include <linux/config.h>
+//#include <linux/config.h>  // see http://askubuntu.com/a/295142
+//#include <linux/autoconf.h>
 #include <linux/module.h>
 #include <linux/kernel.h> 	/* printk() */
 #include <linux/slab.h> 	/* kmalloc() */
