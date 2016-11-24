@@ -12,7 +12,7 @@
 //#include <asm/system.h> 	/* cli(), *_flags */  see http://superuser.com/a/783289
 #include <asm/uaccess.h> 	/* copy_from/to_user */
 
-#define MODNAME "ee346_driver"
+#define MODNAME "ee468Driver"
 
 MODULE_LICENSE("Dual BSD/GPL");
 
