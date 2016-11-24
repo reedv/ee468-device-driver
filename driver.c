@@ -12,6 +12,8 @@
 //#include <asm/system.h> 	/* cli(), *_flags */  see http://superuser.com/a/783289
 #include <asm/uaccess.h> 	/* copy_from/to_user */
 
+#define MODNAME "ee346_driver"
+
 MODULE_LICENSE("Dual BSD/GPL");
 
 /* Declaration of memory.c functions */
@@ -48,7 +50,8 @@ char *memory_buffer;
 int memory_init(void) {
 	int result;
 	/* Registering device */
-	result = register_chrdev(memory_major, "memory", &memory_fops);
+	// to make a corresponding device node use console command $mknod /dev/memory c 60 0
+	result = register_chrdev(memory_major, MODNAME, &memory_fops);
 	if (result < 0) {
 		printk("<1>memory: cannot obtain major number %d\n", memory_major);
 		return result;
@@ -61,7 +64,7 @@ int memory_init(void) {
 		goto fail;
 	}
 	memset(memory_buffer, 0, 1);
-	printk("<1>Inserting memory module\n");
+	printk("<1>Inserting %s module\n", MODNAME);
 	return 0;
 
 	fail:
@@ -76,13 +79,13 @@ int memory_init(void) {
  */
 void memory_exit(void) {
 	/* Freeing the major number */
-	unregister_chrdev(memory_major, "memory");
+	unregister_chrdev(memory_major, MODNAME);
 
 	/* Freeing buffer memory */
 	if (memory_buffer) {
 		kfree(memory_buffer);
 	}
-	printk("<1>Removing memory module\n");
+	printk("<1>Removing %s module\n", MODNAME);
 }
 
 
