@@ -133,21 +133,24 @@ ssize_t memory_read(struct file *filp, char *buf,
 //  }
 
 
-  int transfered = 0;
-  readPos = 0;
-  	while (count && (memstack[readPos] != 0))
-  	{
-  		// resize transfer size if needed
-  		count = (count > STACK_SIZE) ? STACK_SIZE: count;
+	printk("ee468Device: memory_write: entered");
 
-  		// see https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-copy.html
-  		put_user(memstack[count-1], buf++);
-  		transfered++;
-  		count--;
-  		readPos++;
-  	}
+	int transfered = 0;
+	readPos = 0;
+	while (count && (memstack[readPos] != 0))
+	{
+		// resize transfer size if needed
+		count = (count > STACK_SIZE) ? STACK_SIZE: count;
 
-  return transfered;
+		// see https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-copy.html
+		printk("memory_read: memstack[%d] = %s\n", count-1, memstack[count-1]);
+		put_user(memstack[count-1], buf++);
+		transfered++;
+		count--;
+		readPos++;
+	}
+
+	return transfered;
 }
 
 
@@ -162,6 +165,9 @@ ssize_t memory_write( struct file *filp, char *buf,
 //	copy_from_user(memstack,tmp,1);
 //	return 1;
 
+
+	printk("ee468Device: memory_write: entered\n");
+	printk("memory_write: buf = %s\n", buf);
 
 	// reset read position and clear stack for new buffer write
 	readPos = 0;
