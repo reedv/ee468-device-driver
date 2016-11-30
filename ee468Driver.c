@@ -38,9 +38,11 @@ module_init(memory_init);
 module_exit(memory_exit);
 /* Global variables of the driver */
 /* Major number */
-int memory_major = 60;
+const int memory_major = 60;
 /* Buffer to store data */
-char *memory_buffer;
+const int STACK_SIZE = 10;
+char *memstack;
+int readPos;  // index for next read fop
 
 
 
@@ -50,7 +52,7 @@ char *memory_buffer;
 int memory_init(void) {
 	int result;
 	/* Registering device */
-	// to make a corresponding device node use console command $mknod /dev/memory c 60 0
+	// to make a corresponding device node use console command $mknod /dev/<MODNAME> c 60 0
 	result = register_chrdev(memory_major, MODNAME, &memory_fops);
 	if (result < 0) {
 		printk("<1>memory: cannot obtain major number %d\n", memory_major);
@@ -58,12 +60,12 @@ int memory_init(void) {
 	}
 
 	/* Allocating memory for the buffer */
-	memory_buffer = kmalloc(1, GFP_KERNEL);
-	if (!memory_buffer) {
+	memstack = kmalloc(1, GFP_KERNEL);
+	if (!memstack) {
 		result = -ENOMEM;
 		goto fail;
 	}
-	memset(memory_buffer, 0, 1);
+	memset(memstack, 0, 1);
 	printk("<1>Inserting %s module\n", MODNAME);
 	return 0;
 
@@ -82,8 +84,8 @@ void memory_exit(void) {
 	unregister_chrdev(memory_major, MODNAME);
 
 	/* Freeing buffer memory */
-	if (memory_buffer) {
-		kfree(memory_buffer);
+	if (memstack) {
+		kfree(memstack);
 	}
 	printk("<1>Removing %s module\n", MODNAME);
 }
@@ -112,18 +114,39 @@ int memory_release(struct inode *inode, struct file *filp) {
 
 /**
  * Memory Read
+ *
+ * filp = file struct ptr. (to write TO)
+ * buf = userspace buffer to write FROM
+ * count = # of bytes to transfer
+ * f_pos = position of where to start writing in this file
  */
 ssize_t memory_read(struct file *filp, char *buf,
                     size_t count, loff_t *f_pos) {
-  /* Transfering data to user space */
-  copy_to_user(buf,memory_buffer,1);
-  /* Changing reading position as best suits */
-  if (*f_pos == 0) {
-	  *f_pos+=1;
-	  return 1;
-  } else {
-	  return 0;
-  }
+//  /* Transfering data to user space */
+//  copy_to_user(buf,memstack,1);
+//  /* Changing reading position as best suits */
+//  if (*f_pos == 0) {
+//	  *f_pos+=1;
+//	  return 1;
+//  } else {
+//	  return 0;
+//  }
+
+
+  int transfered = 0;
+  readPos = 0;
+  	while (count && (memstack[readPos] != 0))
+  	{
+  		// resize transfer size if needed
+  		count = (count > STACK_SIZE) ? STACK_SIZE: count;
+
+  		copy_to_user(buf++, memstack[count-1]);
+  		transfered++;
+  		count--;
+  		readPos++;
+  	}
+
+  return transfered;
 }
 
 
@@ -133,10 +156,36 @@ ssize_t memory_read(struct file *filp, char *buf,
  */
 ssize_t memory_write( struct file *filp, char *buf,
                       size_t count, loff_t *f_pos) {
-	char *tmp;
-	tmp=buf+count-1;
-	copy_from_user(memory_buffer,tmp,1);
-	return 1;
+//	char *tmp;
+//	tmp=buf+count-1;
+//	copy_from_user(memstack,tmp,1);
+//	return 1;
+
+
+	// reset read position and clear stack for new buffer write
+	readPos = 0;
+	memset(memstack, 0, STACK_SIZE);
+
+	// initial check that buf contains any valid char
+	char valid[] = "abcdefghijklmnopqrstuvwxyz";
+	char *match = strpbrk(buf, valid);
+
+	// write all valid chars from buf to memstack until full
+	int counter = 0;
+	while (match != NULL){
+		if (counter < STACK_SIZE){
+			printk("Match is %c\n",*match);
+			memstack[counter] = *match;
+			match = strpbrk(match+1, valid);
+			counter++;
+			printk("Counter is %d\n",counter);
+		}
+		else{
+			printk("BUFFER OVERFLOW!\n");
+			return 1;
+		}
+	}
+	return counter;
 }
 
 

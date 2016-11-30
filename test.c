@@ -25,7 +25,7 @@ int main()
 	int i;
 	char c;
 
-	fp = open("/dev/myDev", O_RDWR); /* Change "myDev" to your own device. */
+	fp = open("/dev/ee468Driver", O_RDWR); /* Change "myDev" to your own device. */
 
 	read(fp,buffer_out,10); /* Clear out your device */
 
