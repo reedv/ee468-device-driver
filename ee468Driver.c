@@ -140,7 +140,8 @@ ssize_t memory_read(struct file *filp, char *buf,
   		// resize transfer size if needed
   		count = (count > STACK_SIZE) ? STACK_SIZE: count;
 
-  		copy_to_user(buf++, memstack[count-1], 1);
+  		// see https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-copy.html
+  		put_user(memstack[count-1], buf++);
   		transfered++;
   		count--;
   		readPos++;
@@ -168,7 +169,7 @@ ssize_t memory_write( struct file *filp, char *buf,
 
 	// initial check that buf contains any valid char
 	char valid[] = "abcdefghijklmnopqrstuvwxyz";
-	char *match = strpbrk(buf, valid);
+	char *match = strpbrk(buf, valid);  // see http://www.cplusplus.com/reference/cstring/strpbrk/
 
 	// write all valid chars from buf to memstack until full
 	int counter = 0;
