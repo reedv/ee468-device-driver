@@ -133,17 +133,17 @@ ssize_t memory_read(struct file *filp, char *buf,
 //  }
 
 
-	printk("ee468Device: memory_write: entered");
+	printk("ee468Device: memory_write: entered\n");
+
+	// resize transfer size if needed
+	count = (count > STACK_SIZE) ? STACK_SIZE: count;
 
 	int transfered = 0;
 	readPos = 0;
 	while (count && (memstack[readPos] != 0))
 	{
-		// resize transfer size if needed
-		count = (count > STACK_SIZE) ? STACK_SIZE: count;
-
 		// see https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-copy.html
-		printk("memory_read: memstack[%d] = %s\n", count-1, memstack[count-1]);
+		printk("memory_read: memstack[%d] = %c\n", count-1, memstack[count-1]);
 		put_user(memstack[count-1], buf++);
 		transfered++;
 		count--;
