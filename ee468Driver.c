@@ -140,7 +140,7 @@ ssize_t memory_read(struct file *filp, char *buf,
   		// resize transfer size if needed
   		count = (count > STACK_SIZE) ? STACK_SIZE: count;
 
-  		copy_to_user(buf++, memstack[count-1]);
+  		copy_to_user(buf++, memstack[count-1], 1);
   		transfered++;
   		count--;
   		readPos++;
