@@ -42,7 +42,7 @@ const int memory_major = 60;
 /* Buffer to store data */
 const int STACK_SIZE = 10;
 char *memstack;
-int readPos;  // index for next read fop
+int g_readPos;  // index for next read fop
 
 
 
@@ -122,32 +122,21 @@ int memory_release(struct inode *inode, struct file *filp) {
  */
 ssize_t memory_read(struct file *filp, char *buf,
                     size_t count, loff_t *f_pos) {
-//  /* Transfering data to user space */
-//  copy_to_user(buf,memstack,1);
-//  /* Changing reading position as best suits */
-//  if (*f_pos == 0) {
-//	  *f_pos+=1;
-//	  return 1;
-//  } else {
-//	  return 0;
-//  }
-
-
-	printk("ee468Device: memory_write: entered\n");
+	printk("ee468Device: memory_read: entered\n");
 
 	// resize transfer size if needed
 	count = (count > STACK_SIZE) ? STACK_SIZE: count;
 
 	int transfered = 0;
-	readPos = 0;
-	while (count && (memstack[readPos] != 0))
+	g_readPos = 0;
+	while (count && (memstack[g_readPos] != 0))
 	{
 		// see https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-copy.html
 		printk("memory_read: memstack[%d] = %c\n", count-1, memstack[count-1]);
 		put_user(memstack[count-1], buf++);
 		transfered++;
 		count--;
-		readPos++;
+		g_readPos++;
 	}
 
 	return transfered;
@@ -160,17 +149,11 @@ ssize_t memory_read(struct file *filp, char *buf,
  */
 ssize_t memory_write( struct file *filp, char *buf,
                       size_t count, loff_t *f_pos) {
-//	char *tmp;
-//	tmp=buf+count-1;
-//	copy_from_user(memstack,tmp,1);
-//	return 1;
-
-
 	printk("ee468Device: memory_write: entered\n");
-	printk("memory_write: buf = %s\n", buf);
+	printk("memory_write: buf = %s, count = %d\n", buf, count);
 
 	// reset read position and clear stack for new buffer write
-	readPos = 0;
+	g_readPos = 0;
 	memset(memstack, 0, STACK_SIZE);
 
 	// initial check that buf contains any valid char
@@ -182,8 +165,10 @@ ssize_t memory_write( struct file *filp, char *buf,
 	while (match != NULL){
 		if (counter < STACK_SIZE){
 			printk("Match is %c\n",*match);
+
 			memstack[counter] = *match;
 			match = strpbrk(match+1, valid);
+
 			counter++;
 			printk("Counter is %d\n",counter);
 		}
@@ -192,6 +177,7 @@ ssize_t memory_write( struct file *filp, char *buf,
 			return 1;
 		}
 	}
+	printk("memory_write: memstack = %s", memstack);
 	return counter;
 }
 
