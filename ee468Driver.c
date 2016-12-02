@@ -42,7 +42,7 @@ const int memory_major = 60;
 /* Buffer to store data */
 const int STACK_SIZE = 10;
 char *memstack;
-int g_readPos;  // index for next read fop
+int g_readPos = 0;  // index for next read fop
 
 
 
@@ -65,7 +65,7 @@ int memory_init(void) {
 		result = -ENOMEM;
 		goto fail;
 	}
-	memset(memstack, 0, 1);
+	memset(memstack, 0, STACK_SIZE);
 	printk("<1>Inserting %s module\n", MODNAME);
 	return 0;
 
@@ -128,7 +128,7 @@ ssize_t memory_read(struct file *filp, char *buf,
 	count = (count > STACK_SIZE) ? STACK_SIZE: count;
 
 	int transfered = 0;
-	while (count && (memstack[g_readPos] != 0))
+	while (count && g_readPos >= 0/*(memstack[g_readPos] != 0)*/)
 	{
 		// see https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-copy.html
 		printk("memory_read: memstack[%d] = %c\n", /*count-1*/g_readPos, memstack[g_readPos]);
@@ -139,6 +139,7 @@ ssize_t memory_read(struct file *filp, char *buf,
 		count--;
 		g_readPos--;
 	}
+	g_readPos = (g_readPos < 0) ? 0: g_readPos;
 
 	return transfered;
 }
@@ -153,26 +154,20 @@ ssize_t memory_write( struct file *filp, char *buf,
 	printk("ee468Device: memory_write: entered\n");
 	printk("memory_write: buf = %s, count = %d\n", buf, count);
 
-	// reset read position and clear stack for new buffer write
-	g_readPos = 0;
-	memset(memstack, 0, STACK_SIZE);
-
 	// initial check that buf contains any valid char
 	char valid[] = "abcdefghijklmnopqrstuvwxyz";
 	char *match = strpbrk(buf, valid);  // see http://www.cplusplus.com/reference/cstring/strpbrk/
 
 	// write all valid chars from buf to memstack until full
-	int counter = 0;
 	while (match != NULL && count != 0){
-		if (counter < STACK_SIZE){
+		if (g_readPos < STACK_SIZE){
 			printk("Match is %c\n",*match);
-			printk("Counter is %d\n",counter);
+			printk("g_readPos is %d\n",g_readPos);
 
-			memstack[counter] = *match;
-			g_readPos = counter;
+			memstack[g_readPos] = *match;
 			match = strpbrk(match+1, valid);
 
-			counter++;
+			g_readPos++;
 			count--;
 		}
 		else{
@@ -180,8 +175,10 @@ ssize_t memory_write( struct file *filp, char *buf,
 			return 1;
 		}
 	}
+
+	g_readPos--;
 	printk("memory_write: memstack = %s, g_readPos = %d\n", memstack, g_readPos);
-	return counter;
+	return g_readPos;
 }
 
 
