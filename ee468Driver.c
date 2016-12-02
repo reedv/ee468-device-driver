@@ -128,15 +128,16 @@ ssize_t memory_read(struct file *filp, char *buf,
 	count = (count > STACK_SIZE) ? STACK_SIZE: count;
 
 	int transfered = 0;
-	g_readPos = 0;
 	while (count && (memstack[g_readPos] != 0))
 	{
 		// see https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-copy.html
-		printk("memory_read: memstack[%d] = %c\n", count-1, memstack[count-1]);
-		put_user(memstack[count-1], buf++);
+		printk("memory_read: memstack[%d] = %c\n", /*count-1*/g_readPos, memstack[g_readPos]);
+		put_user(memstack[g_readPos], buf++);
+
 		transfered++;
+
 		count--;
-		g_readPos++;
+		g_readPos--;
 	}
 
 	return transfered;
@@ -162,22 +163,24 @@ ssize_t memory_write( struct file *filp, char *buf,
 
 	// write all valid chars from buf to memstack until full
 	int counter = 0;
-	while (match != NULL){
+	while (match != NULL && count != 0){
 		if (counter < STACK_SIZE){
 			printk("Match is %c\n",*match);
+			printk("Counter is %d\n",counter);
 
 			memstack[counter] = *match;
+			g_readPos = counter;
 			match = strpbrk(match+1, valid);
 
 			counter++;
-			printk("Counter is %d\n",counter);
+			count--;
 		}
 		else{
 			printk("BUFFER OVERFLOW!\n");
 			return 1;
 		}
 	}
-	printk("memory_write: memstack = %s", memstack);
+	printk("memory_write: memstack = %s, g_readPos = %d\n", memstack, g_readPos);
 	return counter;
 }
 
