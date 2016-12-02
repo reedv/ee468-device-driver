@@ -139,9 +139,9 @@ ssize_t memory_read(struct file *filp, char *buf,
 		count--;
 		g_readPos--;
 	}
-	g_readPos = (g_readPos < 0) ? 0: g_readPos+1;
+	g_readPos = (g_readPos < 0) ? 0: g_readPos+1;  // to allow proper insertion on next write
 
-	printk("memory_write: memstack = %s, g_readPos = %d\n", memstack, g_readPos);
+	printk("memory_read: memstack = %s, g_readPos = %d\n", memstack, g_readPos);
 	return transfered;
 }
 
