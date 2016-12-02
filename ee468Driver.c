@@ -139,7 +139,7 @@ ssize_t memory_read(struct file *filp, char *buf,
 		count--;
 		g_readPos--;
 	}
-	g_readPos = (g_readPos < 0) ? 0: g_readPos;
+	g_readPos = (g_readPos < 0) ? 0: g_readPos+1;
 
 	return transfered;
 }
