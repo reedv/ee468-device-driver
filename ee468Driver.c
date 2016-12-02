@@ -131,7 +131,7 @@ ssize_t memory_read(struct file *filp, char *buf,
 	while (count && g_readPos >= 0/*(memstack[g_readPos] != 0)*/)
 	{
 		// see https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-copy.html
-		printk("memory_read: memstack[%d] = %c\n", /*count-1*/g_readPos, memstack[g_readPos]);
+		printk("memory_read: memstack[%d] = %c\n", g_readPos, memstack[g_readPos]);
 		put_user(memstack[g_readPos], buf++);
 
 		transfered++;
@@ -141,6 +141,7 @@ ssize_t memory_read(struct file *filp, char *buf,
 	}
 	g_readPos = (g_readPos < 0) ? 0: g_readPos+1;
 
+	printk("memory_write: memstack = %s, g_readPos = %d\n", memstack, g_readPos);
 	return transfered;
 }
 
