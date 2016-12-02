@@ -172,6 +172,7 @@ ssize_t memory_write( struct file *filp, char *buf,
 		}
 		else{
 			printk("BUFFER OVERFLOW!\n");
+			g_readPos = STACK_SIZE - 1;  // so can still read from very top of overflown stack
 			return 1;
 		}
 	}
