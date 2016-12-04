@@ -6,6 +6,7 @@ Instructions for installation:
 3. $ insmod ee468Driver.ko
 4. $ chmod 666 /dev/memory
 
-Can test the device by compiling the test.c file
-	$ gcc -Wall -o test.o test.c
+Can then test the device driver by running 
 	$ ./test.o
+Can view debug output with
+	$ dmesg
