@@ -151,7 +151,7 @@ ssize_t memory_read(struct file *filp, char *buf,
  * Memory Write
  */
 ssize_t memory_write(struct file *filp,  char *buf,
-                     size_t      count   loff_t *f_pos) {
+                     size_t      count,  loff_t *f_pos) {
     printk("ee468Device: memory_write: entered\n");
     printk("memory_write: buf = %s, count = %d\n", buf, count);
 
