@@ -1,4 +1,6 @@
 ee468-DeviceDriver
+==================
+
 
 Instructions for installation:
 1. use command $ make
