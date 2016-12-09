@@ -122,13 +122,16 @@ int memory_release(struct inode *inode, struct file *filp) {
  */
 ssize_t memory_read(struct file *filp, char *buf,
                     size_t count, loff_t *f_pos) {
+
+    int transfered;
+
     printk("ee468Device: memory_read: entered\n");
 
     // resize transfer size if needed
     count = (count > STACK_SIZE) ? STACK_SIZE: count;
 
-    int transfered = 0;
-    while (count && g_readPos >= 0/*(memstack[g_readPos] != 0)*/)
+    transfered = 0;
+    while (count > 0 && g_readPos >= 0/*(memstack[g_readPos] != 0)*/)
     {
         // see https://www.kernel.org/doc/htmldocs/kernel-hacking/routines-copy.html
         printk("memory_read: memstack[%d] = %c\n", g_readPos, memstack[g_readPos]);
@@ -152,12 +155,15 @@ ssize_t memory_read(struct file *filp, char *buf,
  */
 ssize_t memory_write(struct file *filp,  char *buf,
                      size_t      count,  loff_t *f_pos) {
+
+    char valid[] = "abcdefghijklmnopqrstuvwxyz";
+    char* match  = NULL;
+
     printk("ee468Device: memory_write: entered\n");
-    printk("memory_write: buf = %s, count = %d\n", buf, count);
+    printk("memory_write: buf = %s, count = %zu\n", buf, count);
 
     // initial check that buf contains any valid char
-    char valid[] = "abcdefghijklmnopqrstuvwxyz";
-    char *match = strpbrk(buf, valid);  // see http://www.cplusplus.com/reference/cstring/strpbrk/
+    match = strpbrk(buf, valid);  // see http://www.cplusplus.com/reference/cstring/strpbrk/
 
     // write all valid chars from buf to memstack until full
     while (match != NULL && count != 0){

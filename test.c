@@ -22,8 +22,8 @@ int main()
     int fp;
     char buffer_in[100];
     char buffer_out[100];
-    int i;
-    char c;
+    memset((void*)buffer_in, '\0', 100);
+    memset((void*)buffer_out, '\0', 100);
 
     fp = open("/dev/ee468Driver", O_RDWR); /* Change "myDev" to your own device. */
 
