@@ -1,0 +1,9 @@
+Write and read 10 characters:  jihgfedcba                 
+
+Write 5 chars and read 2:  fe                         
+
+Write 2 and read 5 chars:  fbacb                      
+
+Write 20 chars (overflow to at most 10) and read 20 (should read only 10, underflow):  jihgfedcba                 
+
+End of test
